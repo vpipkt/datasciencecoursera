@@ -12,8 +12,4 @@ corr <- function(directory, threshold = 0) {
         ## Return a numeric vector of correlations
 	
 	data <- readPollutionFiles(directory,1:332)
-
-	#adapt complete function
-	monitors <- complete(data)$nobs > threshold
-
 }
