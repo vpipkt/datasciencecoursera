@@ -10,10 +10,23 @@ corr <- function(directory, threshold = 0) {
         ## nitrate and sulfate; the default is 0
 
         ## Return a numeric vector of correlations
-	
-	data <- readPollutionFiles(directory,1:332)
-
-	#adapt complete function
-	monitors <- complete(data)$nobs > threshold
-
+        
+        id = 1:332
+        data <- readPollutionFiles(directory,id)
+        
+        #adapt complete function
+        complete <- data.frame(id=id,
+                               nobs = sapply(id, 
+                                             function(x) sum(complete.cases(subset(d,ID==x)))))
+        
+        monitors <- subset(complete, nobs > threshold)$id
+        
+        if(length(monitors)==0) return(numeric())
+         
+        cor.function <- function(x){
+            dd<-subset(data,ID==x)
+            return(cor(dd$sulfate,dd$nitrate,use="complete.obs"))
+        }
+        
+        return(sapply(monitors, cor.function))
 }

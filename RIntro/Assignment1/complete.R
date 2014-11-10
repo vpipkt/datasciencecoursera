@@ -20,5 +20,7 @@ complete <- function(directory, id = 1:332) {
 	data <- readPollutionFiles(directory,id)
 	
 	#compute the complete cases per id
-
+    return(data.frame(id=id,
+                      nobs = sapply(id, 
+                                    function(x) sum(complete.cases(subset(d,ID==x))))))
 }
