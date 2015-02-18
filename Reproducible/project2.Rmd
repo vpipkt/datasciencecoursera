@@ -41,10 +41,17 @@ head(levels(storm.data$EVTYPE),20)
 The selected strategy to deal with event types is to favor the exact event coding given in NWSI 10-XYZZ. Other entries demonstrate data quality problems and . There are *NNN* codes specified in the documentation. There are `r length(levels(storm.data$EVTYPE))` unique entries in the `EVTYPE` variable. As the sample above displays, there are misspellings, nonstandard entries, placeholders, excess information and other issues.
 
 ####JTB NOTE
-check to see how much of the entire dataset is covered by the standard set of things
+check to see how much of the entire dataset is covered by the standard set of things. covered by the biggest categories.
+
 
 ```{r code-event-types}
+ett <- table(storm.data$EVTYPE)
+sum(ett[ett>100]/nrow(storm.data))
+sum(ett>100)
 
+NWSI.event <- c("Astronomical Low Tide","Avalanche","Blizzard","Coastal Flood","Cold/Wind Chill","Debris Flow","Dense Fog","Dense Smoke","Drought","Dust Devil","Dust Storm","Excessive Heat","Extreme Cold/Wind Chill","Flash Flood","Flood","Frost/Freeze","Funnel Cloud","Freezing Fog","Hail","Heat","Heavy Rain","Heavy Snow","High Surf","High Wind","Hurricane (Typhoon)","Ice Storm","Lake-Effect Snow","Lakeshore Flood","Lightning","Marine Hail","Marine High Wind","Marine Strong Wind","Marine Thunderstorm Wind","Rip Current","Seiche","Sleet","Storm Surge/Tide","Strong Wind","Thunderstorm Wind","Tornado","Tropical Depression","Tropical Storm","Tsunami","Volcanic Ash","Waterspout","Wildfire","Winter Storm","Winter Weather" )
+
+NWSI.event <- toupper(NWSI.event)
 ```
 
 ##Results
