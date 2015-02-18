@@ -15,7 +15,7 @@ desscribes and summarizes your analysis in at most 10 complete sentences.
 1. Across the United States, which types of events have the greatest economic consequences?
 
 ##Data Processing
-The United States National Weather Service (NWS) publishes the *Storm Data* publication and database. It is a record of severe weather and natural hazard events with measurements and narratives. The Coursera web site provides this data from 1950 to 2011. The first step of data processing is to unzip and read in the data. Given the summary nature of the questions at hand, only selected fields are carefully cleaned for further analysis.  The documentation of this dataset describes the use of the property damage exponent (`PROPDMGEXP`), which has important ramifications for the interpretation of property damage estimates. The next area of particular concern is the event type coding (`EVTYPE`), as the goal is to compare the impact among event types. 
+The United States National Weather Service (NWS) publishes the *Storm Data* publication and database. It is a record of severe weather and natural hazard events with measurements and narratives. The Coursera web site provides this data from 1950 to 2011. The first step of data processing is to unzip and read in the data. Given the summary nature of the questions at hand, only selected fields are carefully cleaned for further analysis.  The documentation of this dataset describes the use of the property damage exponent (`PROPDMGEXP`), which has important ramifications for the interpretation of property damage estimates. 
 
 ```{r unzip,cache=TRUE}
 storm.data <- read.csv(bzfile("repdata-data-StormData.csv.bz2"),colClasses="character")
@@ -38,11 +38,7 @@ storm.data$EVTYPE <- as.factor(storm.data$EVTYPE)
 head(levels(storm.data$EVTYPE),20)
 ```
 
-The selected strategy to deal with event types is to favor the exact event coding given in NWSI 10-XYZZ. Other entries demonstrate data quality problems and . There are *NNN* codes specified in the documentation. There are `r length(levels(storm.data$EVTYPE))` unique entries in the `EVTYPE` variable. As the sample above displays, there are misspellings, nonstandard entries, placeholders, excess information and other issues.
-
-####JTB NOTE
-check to see how much of the entire dataset is covered by the standard set of things. covered by the biggest categories.
-
+The next area of particular concern is the event type coding (`EVTYPE`), as the goal is to compare the impact among event types. The selected strategy to deal with event types is to favor the exact event coding given in NWS Instruction 10-1605 and rectify the most common `EVTYPE` values to one of those. There are 48 event types specified in the documentation. There are `r length(levels(storm.data$EVTYPE))` unique entries in the `EVTYPE` variable. As the sample above displays, there are misspellings, nonstandard entries, placeholders, excess information and other issues.  The next code block shows that there are about 70 `EVTYPE` values with over 100 events recorded. These collectively cover well over 99% of the events. The `code.EVTYPE` data frame maps each of these most common `EVTYPE` values to a single NWSI value. It also contains each NSWI value even if that does not have over 100 events.  Once this coding decision is implemented, the data is ready for the analysis questions at hand.
 
 ```{r code-event-types}
 ett <- table(storm.data$EVTYPE)
@@ -52,14 +48,35 @@ sum(ett>100)
 NWSI.event <- c("Astronomical Low Tide","Avalanche","Blizzard","Coastal Flood","Cold/Wind Chill","Debris Flow","Dense Fog","Dense Smoke","Drought","Dust Devil","Dust Storm","Excessive Heat","Extreme Cold/Wind Chill","Flash Flood","Flood","Frost/Freeze","Funnel Cloud","Freezing Fog","Hail","Heat","Heavy Rain","Heavy Snow","High Surf","High Wind","Hurricane (Typhoon)","Ice Storm","Lake-Effect Snow","Lakeshore Flood","Lightning","Marine Hail","Marine High Wind","Marine Strong Wind","Marine Thunderstorm Wind","Rip Current","Seiche","Sleet","Storm Surge/Tide","Strong Wind","Thunderstorm Wind","Tornado","Tropical Depression","Tropical Storm","Tsunami","Volcanic Ash","Waterspout","Wildfire","Winter Storm","Winter Weather" )
 
 NWSI.event <- toupper(NWSI.event)
+
+code.EVTYPE <- data.frame(EVTYPE = c("ASTRONOMICAL HIGH TIDE", "ASTRONOMICAL LOW TIDE", "AVALANCHE", "BLIZZARD", "COASTAL FLOOD", "COASTAL FLOODING", "COLD/WIND CHILL", "LANDSLIDE", "DEBRIS FLOW", "DENSE FOG", "FOG", "DENSE SMOKE", "DROUGHT", "DUST DEVIL", "DUST STORM", "EXCESSIVE HEAT", "EXTREME COLD", "EXTREME COLD/WIND CHILL", "EXTREME WINDCHILL", "FLASH FLOOD", "FLASH FLOODING", "FLOOD", "FLOOD/FLASH FLOOD", "FLOODING", "RIVER FLOOD", "URBAN FLOOD", "URBAN/SML STREAM FLD", "FREEZING FOG", "FROST/FREEZE", "FUNNEL CLOUD", "HAIL", "HEAT", "RECORD WARMTH", "UNSEASONABLY WARM", "HEAVY RAIN", "HEAVY SNOW", "LIGHT SNOW", "MODERATE SNOWFALL", "SNOW", "HEAVY SURF/HIGH SURF", "HIGH SURF", "HIGH WIND", "HIGH WINDS",  "WIND", "HURRICANE", "HURRICANE (TYPHOON)", "FREEZING RAIN", "ICE STORM", "LAKE-EFFECT SNOW", "LAKESHORE FLOOD", "LIGHTNING", "MARINE HAIL", "MARINE HIGH WIND", "MARINE STRONG WIND", "MARINE THUNDERSTORM WIND", "MARINE TSTM WIND", "RIP CURRENT", "RIP CURRENTS", "SEICHE", "SLEET", "STORM SURGE", "STORM SURGE/TIDE", "STRONG WIND", "STRONG WINDS", "DRY MICROBURST", "THUNDERSTORM WIND", "THUNDERSTORM WINDS", "TSTM WIND", "TSTM WIND/HAIL", "TORNADO", "TROPICAL DEPRESSION", "TROPICAL STORM", "TSUNAMI", "VOLCANIC ASH", "WATERSPOUT", "WILD/FOREST FIRE", "WILDFIRE", "WINTER STORM", "WINTER WEATHER", "WINTER WEATHER/MIX"), 
+NWSI.EV = c("ASTRONOMICAL LOW TIDE", "ASTRONOMICAL LOW TIDE", "AVALANCHE", "BLIZZARD", "COASTAL FLOOD", "COASTAL FLOOD", "COLD/WIND CHILL", "DEBRIS FLOW", "DEBRIS FLOW", "DENSE FOG", "DENSE FOG", "DENSE SMOKE", "DROUGHT", "DUST DEVIL", "DUST STORM", "EXCESSIVE HEAT", "EXTREME COLD/WIND CHILL", "EXTREME COLD/WIND CHILL", "EXTREME COLD/WIND CHILL", "FLASH FLOOD", "FLASH FLOOD", "FLOOD", "FLOOD", "FLOOD", "FLOOD", "FLOOD", "FLOOD", "FREEZING FOG", "FROST/FREEZE", "FUNNEL CLOUD", "HAIL", "HEAT", "HEAT", "HEAT", "HEAVY RAIN", "HEAVY SNOW", "HEAVY SNOW", "HEAVY SNOW", "HEAVY SNOW", "HIGH SURF", "HIGH SURF", "HIGH WIND", "HIGH WIND", "HIGH WIND", "HURRICANE (TYPHOON)", "HURRICANE (TYPHOON)", "ICE STORM", "ICE STORM", "LAKE-EFFECT SNOW", "LAKESHORE FLOOD", "LIGHTNING", "MARINE HAIL", "MARINE HIGH WIND", "MARINE STRONG WIND", "MARINE THUNDERSTORM WIND", "MARINE THUNDERSTORM WIND", "RIP CURRENT", "RIP CURRENT", "SEICHE", "SLEET", "STORM SURGE/TIDE", "STORM SURGE/TIDE", "STRONG WIND", "STRONG WIND", "THUNDERSTORM WIND", "THUNDERSTORM WIND", "THUNDERSTORM WIND", "THUNDERSTORM WIND", "THUNDERSTORM WIND", "TORNADO", "TROPICAL DEPRESSION", "TROPICAL STORM", "TSUNAMI", "VOLCANIC ASH", "WATERSPOUT", "WILDFIRE", "WILDFIRE", "WINTER STORM", "WINTER WEATHER", "WINTER WEATHER"), stringsAsFactors = FALSE)
+
+## todo: print code.EVTYPE and number of events and % of events cumulative?
+code.EVTYPE
+
+storm.data$EVTYPE.char <- as.character(storm.data$EVTYPE)
+storm.data$EVTYPE.char <- toupper(storm.data$EVTYPE.char)
+storm.data <- merge(storm.data, code.EVTYPE, by.x = "EVTYPE.char", by.y="EVTYPE", all.x=T)
+storm.data$EVTYPE.char <- NULL
+storm.data$NWSI.EV <- as.factor(storm.data$NWSI.EV)
+
 ```
 
+This event type coding covers a considerable proportion, `r mean(!is.na(storm.data$NWSI.EV))`, of the events in the storm data set.
+
+
 ##Results
-Contains results and at least 1 but no more than 3 Figures
+*Contains results and at least 1 but no more than 3 Figures*
  
+###Public health consequence
 
+The chosen measure of public health outcomes is the total of direct fatalities over the period. As stated in section 2.6 of the National Weather Service Instruction 10-1605: "The determination of direct versus indirect causes of weather-related fatalities or injuries is one of the most difficult aspects of Storm Data preparation." This is interpreted to mean that direct fatalities should overall be a more reliable , as these casualties are more closely linked to the storm event. Also consider that reporting of injuries may be less reliable than reporting of fatalities, which is a standard public health record. Further, comparison of injuries is dubious at best. An injury may result in a wide range of outcomes from temporary pain, costly medical intervention, or permanent disability. 
 
-The chosen measure of public health outcomes is the total of direct fatalities over the period. As stated in section 2.6 of the National Weather Service Instruction 10-1605: "The determination of direct versus indirect causes of weather-related fatalities or injuries is one of the most difficult aspects of Storm Data preparation."  Also consider that reporting of injuries may be less reliable than reporting of fatalities, which is a standard public health record. Further, comparison of injuries is dubious at best. An injury may result in a wide range of outcomes from temporary inconvenience, costly medical intervention, or permanent disability. 
+```{r public health}
 
+```
+
+###Economic consequence
 
 Property damage estimates vary by method of preparation, preparer and data sources. This is clearly described in the National Weather Service Instruction. These estimates are characterized by the NWS as a [best guess](http://). 
