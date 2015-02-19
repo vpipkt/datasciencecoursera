@@ -11,7 +11,7 @@ The National Weather Service collects a variety of narrative and quantitative da
 From 1993 to 2011 in the United States, the most harmful recorded weather events to population health were heat, tornadoes, floods, and lightning. In that time period, the most economically damaging event types are floods. Beyond these storm surge or tide and tornadoes caused large amounts of damage. Hurricanes or tropical storms, hail, and various wind events are also very damaging.  
 
 ##Data Processing
-The United States National Weather Service (NWS) publishes the *Storm Data* publication and database. It is a record of severe weather and natural hazard events with measurements and narratives. The Coursera web site provides this data from 1950 to 2011. The first step of data processing is to unzip and read in the data. Given the summary nature of the questions at hand, only selected fields are carefully cleaned for further analysis.  The documentation of this dataset describes the use of the property damage exponent (`PROPDMGEXP`), which has important ramifications for the interpretation of property damage estimates. 
+The United States National Weather Service (NWS) publishes the *Storm Data* publication and database. It is a record of severe weather and natural hazard events with measurements and narratives. The Coursera web site provides this [data](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2) from 1950 to 2011. The first step of data processing is to unzip and read in the data. Given the summary nature of the questions at hand, only selected fields are carefully cleaned for further analysis.  The [documentation](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf) of this dataset describes the use of the property damage exponent (`PROPDMGEXP`), which has important ramifications for the interpretation of property damage estimates. 
 
 ```{r unzip,cache=TRUE}
 storm.data <- read.csv(bzfile("repdata-data-StormData.csv.bz2"),colClasses="character")
@@ -57,7 +57,7 @@ storm.data$NWSI.EV <- as.factor(storm.data$NWSI.EV)
 
 ```
 
-This event type coding covers a considerable proportion, `r mean(!is.na(storm.data$NWSI.EV))`, of the events in the storm data set.
+This event type coding covers a considerable proportion, `r mean(!is.na(storm.data$NWSI.EV))`, of the events in the data set.
 
 
 ##Results
@@ -65,7 +65,7 @@ Results are described in terms of two separate measures of consequence.
  
 ###Public health consequence
 
-The chosen measure of public health outcomes is the total of direct fatalities over the period. As stated in section 2.6 of the National Weather Service Instruction 10-1605: "The determination of direct versus indirect causes of weather-related fatalities or injuries is one of the most difficult aspects of Storm Data preparation." This is interpreted to mean that direct fatalities should overall be a more reliable than indirect, as these casualties are more closely linked to the storm event. Also consider that reporting of injuries may be less reliable than reporting of fatalities, which is a standard public health record. Further, comparison of injuries is dubious. An injury may result in a wide range of outcomes from temporary pain, costly medical intervention, or permanent disability.
+The chosen measure of public health outcomes is the total of direct fatalities over the period. As stated in section 2.6 of the National Weather Service Instruction 10-1605: "The determination of direct versus indirect causes of weather-related fatalities or injuries is one of the most difficult aspects of *Storm Data* preparation." This is interpreted to mean that direct fatalities should overall be a more reliable than indirect, as these casualties are more closely linked to the storm event. Also consider that reporting of injuries may be less reliable than reporting of fatalities, which is a standard public health record. Further, comparison of injuries is dubious. An injury may result in a wide range of outcomes from temporary pain, costly medical intervention, or permanent disability.
 
 Tornado seems to dominate the fatalities over the whole time period, because it has been collected the longest. Starting in 1993, the set of event types recorded in *Storm Data* expanded significantly. Observe the plot of direct fatalities over time for the various event types. For this reason the comparisons made here are from 1993 onward. The most harmful events to public health, as measured by total direct fatalities over the period, are summarized in the table below.
 
@@ -112,3 +112,7 @@ Flood and flash floods seem to be the most significant hazard to property. Of in
 Storm surge and tide are also a great concern. The combination of hurricane and tropical storm damage results in an interesting group of hazards which would be in the top five.  Consider that storm surge may sometimes be related to hurricane landing events, and there is perhaps cause to more deeply investigate the coding of these events. 
 
 Tornadoes place fairly high on both of these lists. They are sudden onset and violent events, making it difficult to mitigate their impacts on either life or property.
+
+------------------------------
+
+This open source analysis was prepared by @vpipkt. Contribute on [github](https://github.com/vpipkt/datasciencecoursera).
