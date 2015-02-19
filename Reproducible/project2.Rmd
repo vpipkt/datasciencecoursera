@@ -1,0 +1,118 @@
+---
+title: "Severe Weather and Natural Hazard Assessment"
+author: "vpipkt"
+date: "February 20, 2015"
+output: html_document
+---
+
+##Synopsis
+The National Weather Service collects a variety of narrative and quantitative data about significant weather events in its *Storm Data* product. This has been published for some event types since 1950. The NWS records both fatalities caused by the event as well as provides an estimate of property damage.
+
+From 1993 to 2011 in the United States, the most harmful recorded weather events to population health were heat, tornadoes, floods, and lightning. In that time period, the most economically damaging event types are floods. Beyond these storm surge or tide and tornadoes caused large amounts of damage. Hurricanes or tropical storms, hail, and various wind events are also very damaging.  
+
+##Data Processing
+The United States National Weather Service (NWS) publishes the *Storm Data* publication and database. It is a record of severe weather and natural hazard events with measurements and narratives. The Coursera web site provides this [data](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2) from 1950 to 2011. The first step of data processing is to unzip and read in the data. Given the summary nature of the questions at hand, only selected fields are carefully cleaned for further analysis.  The [documentation](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf) of this dataset describes the use of the property damage exponent (`PROPDMGEXP`), which has important ramifications for the interpretation of property damage estimates. 
+
+```{r unzip,cache=TRUE}
+storm.data <- read.csv(bzfile("repdata-data-StormData.csv.bz2"),colClasses="character")
+nrow(storm.data)
+
+storm.data$BeginDate <- as.POSIXct(storm.data$BGN_DATE, format="%m/%d/%Y %H:%M:%S")
+storm.data$STATE <- as.factor(storm.data$STATE)
+
+storm.data$FATALITIES <- as.numeric(storm.data$FATALITIES)
+storm.data$INJURIES <- as.numeric(storm.data$INJURIES)
+
+storm.data$PROPDMG <- as.numeric(storm.data$PROPDMG)
+storm.data$PROPDMGEXP <- as.factor(storm.data$PROPDMGEXP)
+exponents <- data.frame(exp=c("B","h","H","K","m","M"),
+                        mult=c(1e9,1e2,1e2,1e3,1e6,1e6))
+storm.data <- merge(storm.data,exponents,by.x="PROPDMGEXP", by.y="exp",all.x=T)
+storm.data$PropertyDamage <- storm.data$PROPDMG * storm.data$mult
+
+storm.data$EVTYPE <- as.factor(storm.data$EVTYPE)
+head(levels(storm.data$EVTYPE),20)
+```
+
+The next area of particular concern is the event type coding (`EVTYPE`), as the goal is to compare the consequences among event types. The selected strategy is to favor the exact event coding given in NWS Instruction 10-1605 and rectify the most common `EVTYPE` values to one of those. There are 48 event types specified in the documentation. There are `r length(levels(storm.data$EVTYPE))` unique entries in the `EVTYPE` variable. As the sample above displays, there are misspellings, nonstandard entries, placeholders, excess information and other issues.  The next code block shows that there are about 70 `EVTYPE` values with over 100 events recorded. These collectively cover well over 99% of the events. The `code.EVTYPE` data frame maps each of these most common `EVTYPE` values to a single NWSI value. It also contains each NSWI value even if that does not have over 100 events.  Once this coding decision is implemented, the data is ready for the analysis questions at hand.
+
+```{r code-event-types}
+ett <- table(storm.data$EVTYPE)
+sum(ett[ett>100]/nrow(storm.data))
+sum(ett>100)
+
+NWSI.event <- c("Astronomical Low Tide","Avalanche","Blizzard","Coastal Flood","Cold/Wind Chill","Debris Flow","Dense Fog","Dense Smoke","Drought","Dust Devil","Dust Storm","Excessive Heat","Extreme Cold/Wind Chill","Flash Flood","Flood","Frost/Freeze","Funnel Cloud","Freezing Fog","Hail","Heat","Heavy Rain","Heavy Snow","High Surf","High Wind","Hurricane (Typhoon)","Ice Storm","Lake-Effect Snow","Lakeshore Flood","Lightning","Marine Hail","Marine High Wind","Marine Strong Wind","Marine Thunderstorm Wind","Rip Current","Seiche","Sleet","Storm Surge/Tide","Strong Wind","Thunderstorm Wind","Tornado","Tropical Depression","Tropical Storm","Tsunami","Volcanic Ash","Waterspout","Wildfire","Winter Storm","Winter Weather" )
+
+NWSI.event <- toupper(NWSI.event)
+
+code.EVTYPE <- data.frame(EVTYPE = c("ASTRONOMICAL HIGH TIDE", "ASTRONOMICAL LOW TIDE", "AVALANCHE", "BLIZZARD", "COASTAL FLOOD", "COASTAL FLOODING", "COLD/WIND CHILL", "LANDSLIDE", "DEBRIS FLOW", "DENSE FOG", "FOG", "DENSE SMOKE", "DROUGHT", "DUST DEVIL", "DUST STORM", "EXCESSIVE HEAT", "EXTREME COLD", "EXTREME COLD/WIND CHILL", "EXTREME WINDCHILL", "FLASH FLOOD", "FLASH FLOODING", "FLOOD", "FLOOD/FLASH FLOOD", "FLOODING", "RIVER FLOOD", "URBAN FLOOD", "URBAN/SML STREAM FLD", "FREEZING FOG", "FROST/FREEZE", "FUNNEL CLOUD", "HAIL", "HEAT", "RECORD WARMTH", "UNSEASONABLY WARM", "HEAVY RAIN", "HEAVY SNOW", "LIGHT SNOW", "MODERATE SNOWFALL", "SNOW", "HEAVY SURF/HIGH SURF", "HIGH SURF", "HIGH WIND", "HIGH WINDS",  "WIND", "HURRICANE", "HURRICANE (TYPHOON)", "FREEZING RAIN", "ICE STORM", "LAKE-EFFECT SNOW", "LAKESHORE FLOOD", "LIGHTNING", "MARINE HAIL", "MARINE HIGH WIND", "MARINE STRONG WIND", "MARINE THUNDERSTORM WIND", "MARINE TSTM WIND", "RIP CURRENT", "RIP CURRENTS", "SEICHE", "SLEET", "STORM SURGE", "STORM SURGE/TIDE", "STRONG WIND", "STRONG WINDS", "DRY MICROBURST", "THUNDERSTORM WIND", "THUNDERSTORM WINDS", "TSTM WIND", "TSTM WIND/HAIL", "TORNADO", "TROPICAL DEPRESSION", "TROPICAL STORM", "TSUNAMI", "VOLCANIC ASH", "WATERSPOUT", "WILD/FOREST FIRE", "WILDFIRE", "WINTER STORM", "WINTER WEATHER", "WINTER WEATHER/MIX"), 
+NWSI.EV = c("ASTRONOMICAL LOW TIDE", "ASTRONOMICAL LOW TIDE", "AVALANCHE", "BLIZZARD", "COASTAL FLOOD", "COASTAL FLOOD", "COLD/WIND CHILL", "DEBRIS FLOW", "DEBRIS FLOW", "DENSE FOG", "DENSE FOG", "DENSE SMOKE", "DROUGHT", "DUST DEVIL", "DUST STORM", "EXCESSIVE HEAT", "EXTREME COLD/WIND CHILL", "EXTREME COLD/WIND CHILL", "EXTREME COLD/WIND CHILL", "FLASH FLOOD", "FLASH FLOOD", "FLOOD", "FLOOD", "FLOOD", "FLOOD", "FLOOD", "FLOOD", "FREEZING FOG", "FROST/FREEZE", "FUNNEL CLOUD", "HAIL", "HEAT", "HEAT", "HEAT", "HEAVY RAIN", "HEAVY SNOW", "HEAVY SNOW", "HEAVY SNOW", "HEAVY SNOW", "HIGH SURF", "HIGH SURF", "HIGH WIND", "HIGH WIND", "HIGH WIND", "HURRICANE (TYPHOON)", "HURRICANE (TYPHOON)", "ICE STORM", "ICE STORM", "LAKE-EFFECT SNOW", "LAKESHORE FLOOD", "LIGHTNING", "MARINE HAIL", "MARINE HIGH WIND", "MARINE STRONG WIND", "MARINE THUNDERSTORM WIND", "MARINE THUNDERSTORM WIND", "RIP CURRENT", "RIP CURRENT", "SEICHE", "SLEET", "STORM SURGE/TIDE", "STORM SURGE/TIDE", "STRONG WIND", "STRONG WIND", "THUNDERSTORM WIND", "THUNDERSTORM WIND", "THUNDERSTORM WIND", "THUNDERSTORM WIND", "THUNDERSTORM WIND", "TORNADO", "TROPICAL DEPRESSION", "TROPICAL STORM", "TSUNAMI", "VOLCANIC ASH", "WATERSPOUT", "WILDFIRE", "WILDFIRE", "WINTER STORM", "WINTER WEATHER", "WINTER WEATHER"), stringsAsFactors = FALSE)
+code.EVTYPE
+
+storm.data$EVTYPE.char <- as.character(storm.data$EVTYPE)
+storm.data$EVTYPE.char <- toupper(storm.data$EVTYPE.char)
+storm.data <- merge(storm.data, code.EVTYPE, by.x = "EVTYPE.char", by.y="EVTYPE", all.x=T)
+storm.data$EVTYPE.char <- NULL
+storm.data$NWSI.EV <- as.factor(storm.data$NWSI.EV)
+
+```
+
+This event type coding covers a considerable proportion, `r mean(!is.na(storm.data$NWSI.EV))`, of the events in the data set.
+
+
+##Results
+Results are described in terms of two separate measures of consequence.
+ 
+###Public health consequence
+
+The chosen measure of public health outcomes is the total of direct fatalities over the period. As stated in section 2.6 of the National Weather Service Instruction 10-1605: "The determination of direct versus indirect causes of weather-related fatalities or injuries is one of the most difficult aspects of *Storm Data* preparation." This is interpreted to mean that direct fatalities should overall be a more reliable than indirect, as these casualties are more closely linked to the storm event. Also consider that reporting of injuries may be less reliable than reporting of fatalities, which is a standard public health record. Further, comparison of injuries is dubious. An injury may result in a wide range of outcomes from temporary pain, costly medical intervention, or permanent disability.
+
+Tornado seems to dominate the fatalities over the whole time period, because it has been collected the longest. Starting in 1993, the set of event types recorded in *Storm Data* expanded significantly. Observe the plot of direct fatalities over time for the various event types. For this reason the comparisons made here are from 1993 onward. The most harmful events to public health, as measured by total direct fatalities over the period, are summarized in the table below.
+
+```{r public health}
+library(reshape2)
+library(ggplot2)
+library(plyr)
+melted.storm <- melt(storm.data, measure.vars=c("FATALITIES","PropertyDamage"))
+event.summary <- dcast(melted.storm, as.POSIXlt(BeginDate)$year + NWSI.EV ~ variable , sum, na.rm=T)
+names(event.summary)[1] <- "year"
+event.summary$year <- 1900 + event.summary$year
+
+p <- ggplot(event.summary, aes(year,FATALITIES, group=NWSI.EV))
+p + geom_line(aes(col=NWSI.EV),) +  guides(color=FALSE)
+```
+
+Figure 1. Fatalities over time by type
+
+```{r public health table}
+startDate <- as.POSIXct("1993-01-01",format="%Y-%m-%d")
+fatalities <- dcast(melted.storm, NWSI.EV ~ variable, sum, subset=.(BeginDate>=startDate), na.rm=T)
+head(fatalities[order(fatalities$FATALITIES,decreasing=T),1:2],15)
+
+```
+
+Note that Heat and Excessive Heat are both in the top five types of events for fatalities. This is reasonable because heat is dangerous for vulnerable populations. Thunderstorm Wind and High Wind would be just behind Lightning if combined. The nearly 700 fatalities caused by events with an incorrect coding (`<NA>`) demonstrate that more work could be done to resolve the event types provided.
+
+###Economic consequence
+
+Property damage estimates vary by method of preparation, preparer and data sources. This is clearly described in the National Weather Service Instruction. These estimates are characterized by the NWS as a [best guess](http://www.ncdc.noaa.gov/stormevents/faq.jsp). However these values will be used as the best available measure of economic consequence. The table below shows the average annual property damage by event type in millions of dollars.
+
+```{r damage}
+loss <- dcast(melted.storm, NWSI.EV ~ variable, sum, subset=.(BeginDate>=startDate), na.rm=T)
+loss$FATALITIES<-NULL
+loss$PropertyDamage <- loss$PropertyDamage / 19 / 1e6
+head(loss[order(loss$PropertyDamage,decreasing=T),],15)
+
+```
+
+Missing event types are a bigger issue for this measure than for fatality data.
+
+Flood and flash floods seem to be the most significant hazard to property. Of interest, though *Storm Data* describes some seismic events, it does not have an event type for earthquakes.  
+
+Storm surge and tide are also a great concern. The combination of hurricane and tropical storm damage results in an interesting group of hazards which would be in the top five.  Consider that storm surge may sometimes be related to hurricane landing events, and there is perhaps cause to more deeply investigate the coding of these events. 
+
+Tornadoes place fairly high on both of these lists. They are sudden onset and violent events, making it difficult to mitigate their impacts on either life or property.
+
+------------------------------
+
+This open source analysis was prepared by @vpipkt. Contribute on [github](https://github.com/vpipkt/datasciencecoursera).
