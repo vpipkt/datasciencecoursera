@@ -1,6 +1,6 @@
 ---
 title: "Exponential simulation"
-output: html_document
+output: pdf_document
 ---
 
 ##Overview
@@ -25,8 +25,8 @@ figures, titls, text explaining it
 ```{r mean}
 library(ggplot2)
 p<- ggplot(data.frame(sim=simData),aes(x=sim))
-p + geom_density()
-p + abline()
+p + geom_density(col="red",size=2)
+#p + abline()
 
 ```
 todo add theoretical & empirical mean ablines; make nicer labels 
