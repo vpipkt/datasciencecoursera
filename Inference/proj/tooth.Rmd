@@ -1,0 +1,24 @@
+---
+title: "Tooth Growth Analysis"
+author: "Jason T. Brown"
+date: "March, 2015"
+output: pdf_document
+---
+
+Now in the second portion of the class, we're going to analyze the ToothGrowth data in the R datasets package. 
+1. Load the ToothGrowth data and perform some basic exploratory data analyses 
+1. Provide a basic summary of the data.
+1. Use confidence intervals and/or hypothesis tests to compare tooth growth by supp and dose. (Only use the techniques from class, even if there's other approaches worth considering)
+1. State your conclusions and the assumptions needed for your conclusions. 
+
+## Overview
+
+## Exploratory Data Analysis and Summary [at least 1 plot]
+
+## Inference Tests
+
+## Conclusions
+context and assumptions
+
+
+## Appendices NTE 3 pages
