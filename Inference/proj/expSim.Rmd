@@ -17,39 +17,48 @@ In this project you will investigate the exponential distribution in R and compa
 ```{r sim}
 lambda <- 0.2
 n <- 1000
-m <- 40 
-theoMean <- lambda ^ -1
-theoVar <-  lambda ^ -2 / m  
+m <- 40
 
 set.seed(272727)
 simData <- sapply(seq_len(n), function(x){mean(rexp(m,lambda))} )
-mean(simData)
-var(simData)
 ```
 
-## Sample Mean Versus Theoretical Mean
-Given the large sample size, it is reasonable to use kernel density estimation to describe the distribution of the means of the simulated data. This technique gives a smooth portrayal of the data with the same interpretation as a histogram. 
+## Distribution 
+Given the large sample size, it is reasonable to use kernel density estimation to visualize the distribution of the means of the simulated data. This technique gives a smooth portrayal of the data with the same interpretation as a histogram. I hypothesize the central limit theorem should apply. Therefore the simulated data should be approximately normally distributed with a mean of 5 and a standard deviation of 0.625 (this is explained in detail below). The plot below displays densities of the empirical data, the theoretical distribution, and the underlying exponential distribution.
 
-```{r mean}
+```{r dist}
 library(ggplot2)
-library(xtable)
-
-means <- data.frame(MeanType = as.factor(c("Theoretical","Sample")),
-           vals = c(theoMean,mean(simData)))
+theoMean <- lambda ^ -1
+theoVar <-  lambda ^ -2 / m  
 
 p<- ggplot(data.frame(sim=simData),aes(x=sim)) 
-p + geom_density(col="red",size=2,name="Sample Density")  +
-    geom_vline(data=means, aes(xintercept = vals, linetype=MeanType, color=MeanType), 
-               show_guide=TRUE) +
-    annotate("text", label=mean(simData), x= mean(simData), y=0 )
+p + geom_density(aes(col="Sample Density"))  +
+    stat_function(fun = dnorm, aes(color = "CLT Normal"),
+                  arg = list(mean = theoMean, sd = sqrt(theoVar))) +
+    stat_function(fun = dexp, aes(color = "Exponential"), 
+                  arg = list(rate = lambda)) +
+    scale_colour_manual("Distributions",values = c("red", "blue", "green"))
 ```
-```{r printMean, results='asis'}
+
+Right tail is heavy and left is light. This makes sense because the underlying exponential distribution is bounded below at zero. I formally test the hypothesis that the simulated data follows a normal using a Shapiro-Wilk normality test, at a 95% significance level. The null hypothesis is the data follow a normal distribution (with sample mean and sample variance), with the alternative that the data are not normal.
+
+```{r normTest}
+shapiro.test(simData)
+```
+
+Since the p-value is less than 0.05, I conclude that the test fails to reject the null hypothesis. This confirms the visual intuition from observing the densities. 
+
+## Sample Mean Versus Theoretical Mean
+I compute the sample mean of the simulated data and the theoretical mean. Note the theoretical mean of the exponential and the sample of 40 exponentials is the same.
+
+```{r mean,results='asis'}
+library(xtable)
+means <- data.frame(MeanType = as.factor(c("Theoretical","Sample")),
+           value = c(theoMean,mean(simData)))
 print(xtable(means,digits=4),type="latex", comment=FALSE)
 ```
 
-###todo add abline value text labels?; make nicer labels on axis/title
-
-The range of the observations is fairly wide. The sample mean is quite close to the theoretical mean. I conduct an inference test at the 95% significance level. The  null hypothesis that the sample mean is equal to the theoretical mean (5.0) using the not equal alternate hypothesis. The assumption is tha the central limit theorem applies.
+The distribution plot above reveals the range of the observations is fairly wide. However, the sample mean is quite close to the theoretical mean. I conduct an inference test at the 95% significance level. The  null hypothesis that the sample mean is equal to the theoretical mean (5.0) using the not equal alternate hypothesis. I assume that the central limit theorem applies.
 
 ```{r meanInfTest}
 critical <- c(qnorm(0.05/2), qnorm(1-0.05/2))
@@ -61,13 +70,22 @@ z
 
 Observe the test statistic `z` is within the critical values. I conclude that the test conclusion is fail to reject the null hypothesis. The p-value for this test is `r p`.
 
-
 ## Sample Variance Versus Theoretical Variance
+I compute the sample variance and the theoretical variance of the distribution, according to the central limit theorem. This is the variance of the exponential is `1 / lambda ^2 =25`. So the variance of the simulated means is `var/m = 0.625`.
 
-2. Show how variable the sample is (via variance) and compare it to the theoretical variance of the distribution.
+```{r var,results='asis'}
+vars <- data.frame(VarType = as.factor(c("Theoretical","Sample")),
+           value = c(theoVar,var(simData)))
+print(xtable(vars,digits=4),type="latex", comment=FALSE)
+```
 
-Maybe use an f test here?
+The variance does not give the intuitive alignment that the sample mean had. Using the **chi square** test I test the hypothesis that the sample variance is equal to the theoretical value under the assumption that the data are normally distributed. I conduct the test at 95% significance level. The alternative hypothesis is that the variances are not equal.
 
-3. Show that the distribution is approximately normal.
+```{r chiSq}
+test.stat <- (n-1) * var(simData) / theoVar
+crit.chi <- c(qchisq(0.05/2, df = n-1), qchisq(1-0.05/2, df = n-1))
+crit.chi 
+test.stat
+```
 
-In point 3, focus on the difference between the distribution of a large collection of random exponentials and the distribution of a large collection of averages of 40 exponentials. 
+The test statistic falls within the critical values; therefore I fail to reject the null hypothesis that the sample variance is 0.625.
