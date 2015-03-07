@@ -22,3 +22,24 @@ context and assumptions
 
 
 ## Appendices NTE 3 pages
+
+
+#Scratch area
+
+data(ToothGrowth)
+help(ToothGrowth)
+summary(ToothGrowth)
+
+plot(len ~ supp, ToothGrowth)
+
+coplot(len ~ dose | supp, data = ToothGrowth, panel = panel.smooth,
+       xlab = "ToothGrowth data: length vs dose, given type of supplement")
+
+library(ggplot2)
+p <- ggplot(ToothGrowth, aes(x=dose, y=len, group=supp))
+p + geom_point(aes(color=supp)) 
+
+p+stat_smooth(method=lm)
+p+ facet_grid(.~supp) + geom_point() + geom_smooth(method=lm)
+
+
