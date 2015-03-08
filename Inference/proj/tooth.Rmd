@@ -5,41 +5,67 @@ date: "March, 2015"
 output: pdf_document
 ---
 
-Now in the second portion of the class, we're going to analyze the ToothGrowth data in the R datasets package. 
-1. Load the ToothGrowth data and perform some basic exploratory data analyses 
-1. Provide a basic summary of the data.
-1. Use confidence intervals and/or hypothesis tests to compare tooth growth by supp and dose. (Only use the techniques from class, even if there's other approaches worth considering)
-1. State your conclusions and the assumptions needed for your conclusions. 
-
 ## Overview
+ This document is a literate statistical program written in R.
+ 
+## Exploratory Data Analysis
+I first retrieve the data from R's built in datasets library, and print a summary of the variables. Using `help(ToothGrowth)` reveals the variables are the length of guinea pig teeth in unspecified units, the supplement delivery method, either orange juice ("OJ") or ascorbic acid ("VC"), and dose in milligrams.
 
-## Exploratory Data Analysis and Summary [at least 1 plot]
+```{r getdata, results='asis'}
+library(xtable)
+data(ToothGrowth)
+print(xtable(summary(ToothGrowth)), type="latex", comment=FALSE)
+```
+
+The initial summary indicates the data set is small, 60 observations, and has no missing values. I next check the number of subjects for each supplement and dose.  
+
+```{r balanced, results='asis'}
+print(xtable(table(ToothGrowth[, 2:3])), type="latex", comment=FALSE)
+```
+
+As a final exploratory activity, I plot the tooth length versus the dose and supplement. Note the use of the [violin plot](http://en.wikipedia.org/wiki/Violin_plot). This reveals a general upward trend in length with the dose. The orange juice seems that is may be more effective at lower doses.
+
+```{r plotExplore}
+library(ggplot2)
+p <- ggplot(ToothGrowth, aes(x = supp, y = len, group = dose))
+p + facet_grid(. ~ dose) + geom_violin(aes(group = supp)) +  geom_point(aes(col = supp)) +
+ labs(title = "ToothGrowth Summary", x="supp within dose")
+```
 
 ## Inference Tests
 
+###Dose
+I test the effect of dose and supplement using two inference tests. There are many inference tests which could be conducted even on this simple dataset. However I limit these intentionally to avoid fishing for significant results. The first test is whether the mean of tooth length is different at different dose levels. I use a two group *t*-test on the group of 0.5 mg doses versus larger doses.  The significance level is 95%. The null hypothesis is that the means are equal; the alternative is that the smaller doses have a smaller mean.
+
+```{r infTestDose}
+t.test(subset(ToothGrowth, dose<=0.5, len), subset(ToothGrowth, dose>.5, len),
+       alternative = "less", paired = FALSE, var.equal=FALSE)
+```
+
+I conclude to reject the null hypothesis in favor of the alternative that the small doses have a smaller mean. Observe the confidence interval indicates that the means differ by at least 10.13, at the 95% significance level.
+
+###Supplement
+I next test, within the large doses, for the effect of the supplement. Formally, I will test the difference of the group means for the two supplments. The null hypothesis is that the means are equal and the alternative is that they are not equal. I again test at 95% significance level.
+
+```{r infTestSupp}
+t.test(subset(ToothGrowth, supp=="VC" & dose>0.5, len), 
+       subset(ToothGrowth, supp=="OJ" & dose>0.5, len),
+       alternative = "two.sided", paired = FALSE, var.equal=TRUE)
+```
+
+### Assumptions
+In the inference test on doses, I did not assume equal variances. This requires further  assumptions about the applicability of the *t*-statistic. It also assumes that each population variance is approximately equal to the sample variance. In the supplement inference test I assumed the variances were equal for either supplment. 
+
+Bit more about t test generally
+
 ## Conclusions
-context and assumptions
+Is tooth growth good? Higher dose is more effective; additional types of analysis can explain this better. It is not clear which supplement is superior at these higher doses. The investigation has limits in this conclusion on dose, we can only assert this up to 2mg maybe higher is actually worse. 
+
+This information is perhaps useful as a coarse design and we can use it to inform further investigation or maybe economical dosing plan.
+
 
 
 ## Appendices NTE 3 pages
 
-
-#Scratch area
-
-data(ToothGrowth)
-help(ToothGrowth)
-summary(ToothGrowth)
-
-plot(len ~ supp, ToothGrowth)
-
-coplot(len ~ dose | supp, data = ToothGrowth, panel = panel.smooth,
-       xlab = "ToothGrowth data: length vs dose, given type of supplement")
-
-library(ggplot2)
-p <- ggplot(ToothGrowth, aes(x=dose, y=len, group=supp))
-p + geom_point(aes(color=supp)) 
-
-p+stat_smooth(method=lm)
-p+ facet_grid(.~supp) + geom_point() + geom_smooth(method=lm)
 
 
