@@ -6,7 +6,7 @@ output: pdf_document
 ---
 
 ## Overview
- This document is a literate statistical program written in R.
+The effect of two dietary supplements on guinea pig tooth growth is studied. Doses of vitamin C over 0.5 mg encourage tooth growth whether delivered by orange juice or ascorbic acid. This document is a literate statistical program written in R.
  
 ## Exploratory Data Analysis
 I first retrieve the data from R's built in datasets library, and print a summary of the variables. Using `help(ToothGrowth)` reveals the variables are the length of guinea pig teeth in unspecified units, the supplement delivery method, either orange juice ("OJ") or ascorbic acid ("VC"), and dose in milligrams.
@@ -23,13 +23,13 @@ The initial summary indicates the data set is small, 60 observations, and has no
 print(xtable(table(ToothGrowth[, 2:3])), type="latex", comment=FALSE)
 ```
 
-As a final exploratory activity, I plot the tooth length versus the dose and supplement. Note the use of the [violin plot](http://en.wikipedia.org/wiki/Violin_plot). This reveals a general upward trend in length with the dose. The orange juice seems that is may be more effective at lower doses.
+As a final exploratory activity, I plot the tooth length versus the dose and supplement. Note the use of the [violin plot](http://en.wikipedia.org/wiki/Violin_plot). This reveals a general upward trend in length with the dose. It appears the orange juice may be more effective than ascorbic acid at lower doses.
 
 ```{r plotExplore}
 library(ggplot2)
 p <- ggplot(ToothGrowth, aes(x = supp, y = len, group = dose))
 p + facet_grid(. ~ dose) + geom_violin(aes(group = supp)) +  geom_point(aes(col = supp)) +
- labs(title = "ToothGrowth Summary", x="supp within dose")
+ labs(title = "ToothGrowth Summary", x = "supp within dose")
 ```
 
 ## Inference Tests
@@ -53,19 +53,15 @@ t.test(subset(ToothGrowth, supp=="VC" & dose>0.5, len),
        alternative = "two.sided", paired = FALSE, var.equal=TRUE)
 ```
 
+I fail to rejec the null hypothesis at 95% significance level. I conclude that the supplement means are the same at doses of 1 or 2 mg.
+
 ### Assumptions
 In the inference test on doses, I did not assume equal variances. This requires further  assumptions about the applicability of the *t*-statistic. It also assumes that each population variance is approximately equal to the sample variance. In the supplement inference test I assumed the variances were equal for either supplment. 
 
-Bit more about t test generally
+**Bit more about t test generally**
 
 ## Conclusions
-Is tooth growth good? Higher dose is more effective; additional types of analysis can explain this better. It is not clear which supplement is superior at these higher doses. The investigation has limits in this conclusion on dose, we can only assert this up to 2mg maybe higher is actually worse. 
+The conclusions for this study depend on whether tooth growth is considered desirable or not. In either case, a higher dose of either orange juice or ascorbic acid is more effective. It is not clear which supplement is superior at doses of 1 or 2 mg. This study cannot predict the effect of doses higher than 2 mg.
 
-This information is perhaps useful as a coarse design and we can use it to inform further investigation or maybe economical dosing plan.
-
-
-
-## Appendices NTE 3 pages
-
-
+Additional research is warranted if an economical plan to encourage tooth growth is to be formulated. Other analysis techniques could be applied to the existing data. Those results could augment the conclusions of this study to formulate subsequent experimental designs.
 
