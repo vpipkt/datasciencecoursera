@@ -14,13 +14,13 @@ I first retrieve the data from R's built in datasets library, and print a summar
 ```{r getdata, results='asis'}
 library(xtable)
 data(ToothGrowth)
-print(xtable(summary(ToothGrowth)), type="latex", comment=FALSE)
+print(xtable( summary(ToothGrowth) ), type="latex", comment=FALSE)
 ```
 
 The initial summary indicates the data set is small, 60 observations, and has no missing values. I next check the number of subjects for each supplement and dose.  
 
 ```{r balanced, results='asis'}
-print(xtable(table(ToothGrowth[, 2:3])), type="latex", comment=FALSE)
+print(xtable( table(ToothGrowth[, 2:3]) ), type="latex", comment=FALSE)
 ```
 
 As a final exploratory activity, I plot the tooth length versus the dose and supplement. Note the use of the [violin plot](http://en.wikipedia.org/wiki/Violin_plot). This reveals a general upward trend in length with the dose. It appears the orange juice may be more effective than ascorbic acid at lower doses.
@@ -33,16 +33,17 @@ p + facet_grid(. ~ dose) + geom_violin(aes(group = supp)) +  geom_point(aes(col 
 ```
 
 ## Inference Tests
+There are many inference tests which could be conducted even on this simple dataset. However I limit these intentionally to avoid fishing for significant results. I test the effect of dose and supplement on the mean tooth length using two inference tests. 
 
 ###Dose
-I test the effect of dose and supplement using two inference tests. There are many inference tests which could be conducted even on this simple dataset. However I limit these intentionally to avoid fishing for significant results. The first test is whether the mean of tooth length is different at different dose levels. I use a two group *t*-test on the group of 0.5 mg doses versus larger doses.  The significance level is 95%. The null hypothesis is that the means are equal; the alternative is that the smaller doses have a smaller mean.
+The first test is whether the mean of tooth length is different at different dose levels. I use a two group *t*-test on the group of 0.5 mg doses versus larger doses.  The significance level is 95%. The null hypothesis is that the means are equal; the alternative is that the smaller doses have a smaller mean.
 
 ```{r infTestDose}
-t.test(subset(ToothGrowth, dose<=0.5, len), subset(ToothGrowth, dose>.5, len),
-       alternative = "less", paired = FALSE, var.equal=FALSE)
+t.test(subset(ToothGrowth, dose <= 0.5, len), subset(ToothGrowth, dose > 0.5, len),
+       alternative = "less", paired = FALSE, var.equal = TRUE)
 ```
 
-I conclude to reject the null hypothesis in favor of the alternative that the small doses have a smaller mean. Observe the confidence interval indicates that the means differ by at least 10.13, at the 95% significance level.
+I conclude to reject the null hypothesis in favor of the alternative that the small doses have a smaller mean. Observe the confidence interval indicates that the means differ by at least 10.0, at the 95% significance level.
 
 ###Supplement
 I next test, within the large doses, for the effect of the supplement. Formally, I will test the difference of the group means for the two supplments. The null hypothesis is that the means are equal and the alternative is that they are not equal. I again test at 95% significance level.
@@ -50,18 +51,41 @@ I next test, within the large doses, for the effect of the supplement. Formally,
 ```{r infTestSupp}
 t.test(subset(ToothGrowth, supp=="VC" & dose>0.5, len), 
        subset(ToothGrowth, supp=="OJ" & dose>0.5, len),
-       alternative = "two.sided", paired = FALSE, var.equal=TRUE)
+       alternative = "two.sided", paired = FALSE, var.equal = FALSE)
 ```
 
-I fail to rejec the null hypothesis at 95% significance level. I conclude that the supplement means are the same at doses of 1 or 2 mg.
+I fail to reject the null hypothesis at 95% significance level. I conclude that the supplement means are the same at doses of 1 or 2 mg.
 
 ### Assumptions
-In the inference test on doses, I did not assume equal variances. This requires further  assumptions about the applicability of the *t*-statistic. It also assumes that each population variance is approximately equal to the sample variance. In the supplement inference test I assumed the variances were equal for either supplment. 
+To use the t-test I assume that the population variances are unknown, which is appropriate in this case. It also requires that the central limit theorem applies. This either means the samples are large or that the underlying distribution is approximately normal. Some of the samples are too small and so I assume approximate normality.
 
-**Bit more about t test generally**
+In the dose test, I assumed equal variances. In the supplement test, I assumed unequal variances. Both assumptions are based on the *F*-tests discussed in the appendix. 
 
 ## Conclusions
-The conclusions for this study depend on whether tooth growth is considered desirable or not. In either case, a higher dose of either orange juice or ascorbic acid is more effective. It is not clear which supplement is superior at doses of 1 or 2 mg. This study cannot predict the effect of doses higher than 2 mg.
+The conclusions for this study depend on whether tooth growth is considered desirable or not. In either case, a higher dose of either orange juice or ascorbic acid is more effective. It is not clear which supplement is more effective at doses of 1 or 2 mg. This study cannot predict the effect of doses higher than 2 mg.
 
-Additional research is warranted if an economical plan to encourage tooth growth is to be formulated. Other analysis techniques could be applied to the existing data. Those results could augment the conclusions of this study to formulate subsequent experimental designs.
+Additional research is warranted if an economical plan to encourage tooth growth is contemplated. Other analysis techniques could be applied to the existing data. Those results could augment the conclusions of this study and help formulate subsequent experimental designs.
 
+---------------------------------------------------------------
+
+## Appendix
+
+### Equal variance assumption for dose
+The null hypothesis is the ratio of variances is one. The 95% confidence interval contains one, so I fail to reject the null hypothesis. I conclude to use the equal variance assumption in the dose test.  
+
+```{r equalVarDose}
+x <- as.vector(subset(ToothGrowth, dose <= 0.5)$len)
+y <- as.vector(subset(ToothGrowth, dose > 0.5)$len)
+var.test(x , y)
+```
+
+### Equal variance assumption for supplement
+The set up of the supplment variance hypothesis test is the same as for dose. The null hypothesis is that the variances are equal (ratio is one). The alternative is that they are not equal. At the 95% significance level, I reject the null hypothesis in favor of the alternative. 
+
+```{r equalVarSupp}
+x <- as.vector(subset(ToothGrowth, supp == "VC" & dose > 0.5)$len)
+y <- as.vector(subset(ToothGrowth, supp == "OJ" & dose > 0.5)$len)
+var.test(x , y)
+```
+
+In the supplement mean t-test, because I concluded unequal variance, the more complicated estimate of the degrees of freedom for the t statistic must be used.
