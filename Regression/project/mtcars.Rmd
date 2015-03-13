@@ -1,0 +1,38 @@
+---
+title: "Transmission Choice and Fuel Economy"
+author: "Jason T. Brown"
+date: "March 2015"
+output: pdf_document
+---
+
+NTE 2 pages body and 5 total with appx (of only images)
+
+“Is an automatic or manual transmission better for MPG”
+"Quantify the MPG difference between automatic and manual transmissions"
+
+# Executive Summary
+
+required element.  This is a literate statistical programming document using R code embedded throughout.[^1]
+
+# Data Exploration
+
+
+# Regression Modeling
+## Interpretation
+What do the coefficients mean?
+What is the uncertainty in our result?
+Make appropriate inference from the model.
+
+## Model Diagnostics
+residual plots and interpretations
+
+## Model Selection
+
+#Conclusions
+answer the questions or state why you cannot answer them.
+
+[^1]: This open source analysis was prepared by @vpipkt using [Rmarkdown](http://rmarkdown.rstudio.com). Contribute on [github](https://github.com/vpipkt/datasciencecoursera/Regression/project).
+
+-------------------------------
+#Appendix
+up to 3 pages no text
