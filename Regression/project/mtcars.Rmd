@@ -15,7 +15,7 @@ NTE 2 pages body and 5 total with appx (of only images)
 required element.  This is a literate statistical programming document using R code embedded throughout.[^1]
 
 # Data Exploration
-
+sampling?
 
 # Regression Modeling
 ## Interpretation
