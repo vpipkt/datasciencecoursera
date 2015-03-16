@@ -7,8 +7,9 @@ output: pdf_document
 
 NTE 2 pages body and 5 total with appx (of only images)
 
-“Is an automatic or manual transmission better for MPG”
-"Quantify the MPG difference between automatic and manual transmissions"
+ * Is an automatic or manual transmission better for MPG?
+ 
+ * Quantify the MPG difference between automatic and manual transmissions?
 
 # Executive Summary
 
@@ -16,23 +17,47 @@ required element.  This is a literate statistical programming document using R c
 
 # Data Exploration
 sampling?
+pca (briefly) and mpg plot
 
 # Regression Modeling
-## Interpretation
-What do the coefficients mean?
-What is the uncertainty in our result?
-Make appropriate inference from the model.
-
-## Model Diagnostics
-residual plots and interpretations
+I answer this question using regression modeling. Basic approach is to describe the fuel economy as an outcome of other characteristics of the car. I am interested in models that include the transmission type, as these indicate the size of the effect on fuel economy.
 
 ## Model Selection
+The model selection process began by fitting a simple model with transmission predicting economy. From here, additional candidate variables were tried one at a time. I observed one of three outcomes when including the variable:
+
+   * It did not improve the model[^2] 
+   * It improved the model. 
+   * A model with the variable was better when transmission was excluded (using log likelihood test).
+
+[^2]:Performance was judged by adjusted R-squared though models with insignificant parameters were considered poorer than those without.
+
+The first case is useful information and I generally excluded the variable from that point forward. The second case is directly useful to the question at hand. By exploring the third case, the most explanatory model of fuel economy can be found. This is weight and horsepower with interaction. This makes sense and it also makes sense that transmission choice is not particularly influential when predicting on those two terms.
+
+The best model of fuel economy found which also includes transmission is:
+**latex** `mpg = 31 - 0.059 * hp - 5.28 * auto`
+
+## Model Diagnostics
+See the appendix for the diagnostic plot. The diagnostic performance of the model is reasonably good. There is nothing to suggest a data error. None of the points seem to have too high of influence on the model. 
+*are there points above the intersect?*
+
+## Interpretation
+What do the coefficients mean?
+Automatic transmission means 5.28 less miles per gallon on average. Each additional horsepower rated translates into 0.059 less mpg, or 5.9 less miles per gallon per 100 hp.
+
+What is the uncertainty in our result?
+Make appropriate inference from the model.
 
 #Conclusions
 answer the questions or state why you cannot answer them.
 
 [^1]: This open source analysis was prepared by @vpipkt using [Rmarkdown](http://rmarkdown.rstudio.com). Contribute on [github](https://github.com/vpipkt/datasciencecoursera/Regression/project).
 
--------------------------------
+
+\pagebreak
 #Appendix
 up to 3 pages no text
+
+## Diagnostic plot
+
+
+## Can u do wone of those swaggy ggplots with the lines for auto and manual in the mpg~hp space? 
