@@ -132,6 +132,8 @@ summary(hp2)
 summary(hp)
 
 
+
+###### confidence diagnostic plot
 plot(mpg~hp, mtcars,col=tran)
 abline(hp$coefficients[1], hp$coefficients[3])
 abline(hp$coefficients[1] + hp$coefficients[2], hp$coefficients[3],col=3)
@@ -142,3 +144,4 @@ news<-data.frame(hp=rep(seq(50,325,25),2),tran=rep(c("auto","manual"), each=12))
 pred <- predict(hp,news,interval="confidence")
 lines(x=news$hp, y=pred[,2],col=news$tran,lty=2)
 lines(x=news$hp, y=pred[,3],col=news$tran,lty=2)
+ 

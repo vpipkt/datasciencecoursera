@@ -44,6 +44,7 @@ The model selection process began by fitting a simple model with transmission pr
 The first case is useful information and I generally excluded the variable from that point forward. The second case is directly useful to the question at hand. By exploring the third case, the most explanatory model of fuel economy can be found. This is weight and horsepower with interaction. This makes sense and it also makes sense that transmission choice is not particularly influential when predicting on those two terms.
 
 Following the method above, the best model of fuel economy found which also includes transmission is shown below. Note this model does not include the intercept.
+
 $$mpg = 31.9 - 0.059 \cdot hp - 5.28 \cdot auto$$
 
 ```{r hpModel}
