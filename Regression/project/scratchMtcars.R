@@ -5,7 +5,7 @@
 
 data(mtcars)
 help(mtcars)
-f#variable am is Transmission
+#variable am is Transmission
 #0 = auto; 1 = manual
 
 mtcars$tran <- factor(mtcars$am, levels = c(1,0), labels = c("manual", "auto"))
@@ -122,4 +122,12 @@ summary(hp.wt)
 hp.wt0 <- lm(mpg ~ hp*wt, mtcars)
 summary(hp.wt0)
 plot(hp.wt0)
+
+
+
+#
+hp2 <- lm(mpg ~ tran * hp, mtcars)
+summary(hp2)
+
+summary(hp)
 
