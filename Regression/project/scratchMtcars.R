@@ -5,7 +5,7 @@
 
 data(mtcars)
 help(mtcars)
-f#variable am is Transmission
+#variable am is Transmission
 #0 = auto; 1 = manual
 
 mtcars$tran <- factor(mtcars$am, levels = c(1,0), labels = c("manual", "auto"))
@@ -123,3 +123,22 @@ hp.wt0 <- lm(mpg ~ hp*wt, mtcars)
 summary(hp.wt0)
 plot(hp.wt0)
 
+
+
+#
+hp2 <- lm(mpg ~ tran * hp, mtcars)
+summary(hp2)
+
+summary(hp)
+
+
+plot(mpg~hp, mtcars,col=tran)
+abline(hp$coefficients[1], hp$coefficients[3])
+abline(hp$coefficients[1] + hp$coefficients[2], hp$coefficients[3],col=3)
+predict
+?predict
+
+news<-data.frame(hp=rep(seq(50,325,25),2),tran=rep(c("auto","manual"), each=12))
+pred <- predict(hp,news,interval="confidence")
+lines(x=news$hp, y=pred[,2],col=news$tran,lty=2)
+lines(x=news$hp, y=pred[,3],col=news$tran,lty=2)
