@@ -142,6 +142,30 @@ predict
 
 news<-data.frame(hp=rep(seq(50,325,25),2),tran=rep(c("auto","manual"), each=12))
 pred <- predict(hp,news,interval="confidence")
-lines(x=news$hp, y=pred[,2],col=news$tran,lty=2)
-lines(x=news$hp, y=pred[,3],col=news$tran,lty=2)
+lines(x=news$hp, y=pred[,2], lty=2)
+lines(x=news$hp, y=pred[,3], lty=2,col=3)
  
+
+## after ggplot
+p <- ggplot(mtcars, aes(x = hp, y=mpg, group = tran), . ~ tran) + geom_point()
+p + geom_smooth(aes(group = tran, color=tran), method="lm" ,formula= y~x+group)
+
+ggg<- p+ stat_smooth(method="lm")
+#so direct call to geom+smooth appears to have wider bounds; particularly on the MT line
+?geom_smooth
+
+#instad geom_ribbon
+pred.df<- as.data.frame(cbind(news, pred))
+p2<- ggplot(mtcars, aes(x = hp, y=mpg))
+p2 + geom_point(aes(col=tran))
+
+
+#################SWAGGY PLOT$$$$$$
+
+pred2 <- predict(hp, interval="confidence")
+predframe <- with(mtcars,
+                  data.frame(hp,tran, mpg=pred2[,"fit"], lwr=pred2[,"lwr"], upr=pred2[,"upr"]))
+coeffs <- data.frame(tran=factor(c("auto", "manual")), a = c(sum(hp$coefficients[1:2]),hp$coefficients[1]), b = rep(hp$coefficients[3],2))
+p2<- ggplot(mtcars, aes(x = hp, y=mpg))
+p2 + geom_ribbon(data=predframe, aes(ymin=lwr, ymax=upr, group=tran), fill = "grey70", alpha=.5) +
+    geom_abline(data = coeffs,aes(intercept = a, slope = b, color = tran)) + geom_point(aes(col=tran), size=3)
