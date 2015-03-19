@@ -30,10 +30,10 @@ mtcars$tran <- factor(mtcars$am, levels = c(1,0), labels = c("manual", "auto"))
 ```
 
 # Regression Modeling
-I answer this question using regression modeling. Basic approach is to describe the fuel economy as an outcome of other characteristics of the car. I am interested in models that include the transmission type, as these indicate the size of the effect on fuel economy.
+I answer these questions using regression modeling. Basic approach is to describe the fuel economy as an outcome of other characteristics of the car. I am interested in models that include the transmission type, as these indicate the size of the effect on fuel economy.
 
 ## Model Selection
-The model selection process began by fitting a simple model with transmission predicting economy. From here, additional candidate variables were added one at a time, with the interaction term. The variables were *list of variables*. I observed one of three outcomes when including the variable:
+The model selection process began by fitting a simple model with transmission predicting economy. From here, additional candidate variables were added one at a time, with the interaction term. The variables were acceleration speed, weight, engine displacement, number of gears, horsepower, and number of carburetors. I observed one of three outcomes when including the variable:
 
    * It did not improve the model[^2] 
    * It improved the model. 
@@ -41,7 +41,7 @@ The model selection process began by fitting a simple model with transmission pr
 
 [^2]:Performance was judged by adjusted R-squared though models with insignificant parameters were considered poorer than those without.
 
-The first case is useful information and I generally excluded the variable from that point forward. The second case is directly useful to the question at hand. By exploring the third case, the most explanatory model of fuel economy can be found. This is weight and horsepower with interaction. This makes sense and it also makes sense that transmission choice is not particularly influential when predicting on those two terms.
+The first case is useful information and I generally excluded the variable from that point forward. The second case is interesting to the question at hand. By exploring the third case, the most explanatory model of fuel economy can be found. This is weight and horsepower with interaction. This makes sense and it also makes sense that transmission choice is not particularly influential when predicting on those two terms.
 
 Following the method above, the best model of fuel economy found which also includes transmission is shown below. Note this model does not include the intercept.
 
@@ -53,22 +53,20 @@ summary(hp)
 ```
 
 ## Model Diagnostics
-See the appendix for the diagnostic plot. The diagnostic performance of the model is reasonably good. There is nothing to suggest a data error. None of the points seem to have too high of influence on the model. 
-
-Some points are above the intercept.
+See the appendix for the diagnostic plot. The diagnostic performance of the model is reasonably good. There is nothing to suggest a data error. None of the points seem to have excessive influence on the model. Diagnostic plots are shown in the appendix. The observed mpg value for two cars is above the maximum predicted by the model. These are shown below and are also highlighted in the diagnostic plots.  
 ```{r overIntercept,results='asis'}
 print(xtable(mtcars[mtcars$mpg >= hp$coefficients[1], c(1,4,12)]), type="latex", comment=FALSE)
 ```
 
 ## Interpretation
 What do the coefficients mean?
-Automatic transmission means 5.28 less miles per gallon on average. Each additional horsepower rated translates into 0.059 less mpg, or 5.9 less miles per gallon per 100 hp.
+The strict interpretation of the model is that automatic transmission is worse for fuel economy. Compared to manual, automatic means 5.28 less miles per gallon on average for cars with the same horsepower. * Give a CI*. The model also indicates that each additional horsepower rated translates into 0.059 less mpg, or 5.9 less miles per gallon per 100 hp.  *GIVE CI* The regression model, with confidence interval, is plotted in the appendix. 
 
-What is the uncertainty in our result?
+###What is the uncertainty in our result?
 Make appropriate inference from the model.
 
 #Conclusions
-answer the questions or state why you cannot answer them.
+The analysis shows that cars with automatic transmission have about $5.3 \plusminus ciBound$ mpg less fuel efficiency, controlling for horsepower. The analysis also showed that other design factors such as horsepower and weight are very influential. It appears that automatic transmissions are more often equipped on heavy and powerful cars, that is they are part of a high end set of features. Cars with manual transmission tended to be more likely on cars with smaller engines with a greater overall design focus on economy.
 
 [^1]: This open source analysis was prepared by @vpipkt using [Rmarkdown](http://rmarkdown.rstudio.com). Contribute on [github](https://github.com/vpipkt/datasciencecoursera/Regression/project).
 
@@ -78,6 +76,10 @@ answer the questions or state why you cannot answer them.
 up to 3 pages no text
 
 ## Diagnostic plot
+```{r diagPlots,fig.height=3}
+par(mfrow = c(2,2))
+plot(hp)
+```
 
 
 ## Can u do wone of those swaggy ggplots with the lines for auto and manual in the mpg~hp space? 
