@@ -124,6 +124,11 @@ summary(hp.wt0)
 plot(hp.wt0)
 
 
+model2 <- ggplot(mtcars, aes(y=mpg, x=wt))
+model2 + geom_point(aes(col = tran))
+
+
+plot(mpg~hp * wt, mtcars)
 
 #
 hp2 <- lm(mpg ~ tran * hp, mtcars)
@@ -169,3 +174,10 @@ coeffs <- data.frame(tran=factor(c("auto", "manual")), a = c(sum(hp$coefficients
 p2<- ggplot(mtcars, aes(x = hp, y=mpg))
 p2 + geom_ribbon(data=predframe, aes(ymin=lwr, ymax=upr, group=tran), fill = "grey70", alpha=.5) +
     geom_abline(data = coeffs,aes(intercept = a, slope = b, color = tran)) + geom_point(aes(col=tran), size=3)
+
+
+
+############3 and confidence interval
+co <- summary(hp)$coefficients
+co["tranauto","Estimate"] + c(-1, 1) * qt(.975, df = hp$df) * co["tranauto","Std. Error"]
+

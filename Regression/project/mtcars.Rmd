@@ -7,45 +7,26 @@ output: pdf_document
 ```{r libs,echo=FALSE}
 library(xtable)
 library(ggplot2)
+#NTE 2 pages body ---
 ```
-
- 
-
-NTE 2 pages body and 5 total with appx (of only images)
-
- * Is an automatic or manual transmission better for MPG?
- 
- * Quantify the MPG difference between automatic and manual transmissions?
 
 # Executive Summary
 
-required element.  This is a literate statistical programming document using R code embedded throughout.[^1]
+In this study, regression models are used to determine the effect of automatic or manual transmission on fuel efficiency. Generally, cars with automatic transmissions are estimated to achieve 3.1 to 7.5 mpg worse economy. The analysis also showed that other design factors such as horsepower and weight are very influential. This is a literate statistical programming document using R code embedded throughout.[^1]
 
 # Data Exploration
-sampling?
-pca (briefly) and mpg plot
 ```{r getData}
 data(mtcars)
 mtcars$tran <- factor(mtcars$am, levels = c(1,0), labels = c("manual", "auto"))
 ```
 
+The data are built in to R. I plot them by quarter-mile time and engine displacement, shown in the appendix. These two variables provide a clean break between automatic and manual cars. 
+
 # Regression Modeling
-I answer these questions using regression modeling. Basic approach is to describe the fuel economy as an outcome of other characteristics of the car. I am interested in models that include the transmission type, as these indicate the size of the effect on fuel economy.
+I answer the study questions using regression modeling. The approach is to describe the fuel economy as an outcome of characteristics of the car. I am interested in models that include the transmission type, as these will indicate the direction and size of the effect on fuel economy.
 
 ## Model Selection
-The model selection process began by fitting a simple model with transmission predicting economy. From here, additional candidate variables were added one at a time, with the interaction term. The variables were acceleration speed, weight, engine displacement, number of gears, horsepower, and number of carburetors. I observed one of three outcomes when including the variable:
-
-   * It did not improve the model[^2] 
-   * It improved the model. 
-   * A model with the variable was better when transmission was excluded (using log likelihood test).
-
-[^2]:Performance was judged by adjusted R-squared though models with insignificant parameters were considered poorer than those without.
-
-The first case is useful information and I generally excluded the variable from that point forward. The second case is interesting to the question at hand. By exploring the third case, the most explanatory model of fuel economy can be found. This is weight and horsepower with interaction. This makes sense and it also makes sense that transmission choice is not particularly influential when predicting on those two terms.
-
-Following the method above, the best model of fuel economy found which also includes transmission is shown below. Note this model does not include the intercept.
-
-$$mpg = 31.9 - 0.059 \cdot hp - 5.28 \cdot auto$$
+The model selection process began by fitting a simple model with only transmission predicting economy. From here, additional candidate variables were added one at a time, with the interaction term. The best model found by this approach uses only weight and horsepower with interaction (adjusted $R^2 = 0.87$). This result confirms our intuition about fuel economy generally. The best model of fuel economy found which also includes transmission is: $mpg = 31.9 - 0.059 \cdot hp - 5.28 \cdot auto$. 
 
 ```{r hpModel}
 hp <- lm(mpg ~ tran + hp, mtcars)
@@ -53,33 +34,61 @@ summary(hp)
 ```
 
 ## Model Diagnostics
-See the appendix for the diagnostic plot. The diagnostic performance of the model is reasonably good. There is nothing to suggest a data error. None of the points seem to have excessive influence on the model. Diagnostic plots are shown in the appendix. The observed mpg value for two cars is above the maximum predicted by the model. These are shown below and are also highlighted in the diagnostic plots.  
+The diagnostic performance of the model is reasonably good. There is nothing to suggest a data error. None of the points seem to have excessive influence on the model. Diagnostic plots are shown in the appendix. The observed mpg value for two cars is above the maximum predicted by the model. These are shown below and are also highlighted in the diagnostic plots.  
 ```{r overIntercept,results='asis'}
-print(xtable(mtcars[mtcars$mpg >= hp$coefficients[1], c(1,4,12)]), type="latex", comment=FALSE)
+print(xtable(mtcars[mtcars$mpg >= hp$coefficients[1], c(1,4,12)]), type="latex", comment=F)
 ```
 
 ## Interpretation
-What do the coefficients mean?
-The strict interpretation of the model is that automatic transmission is worse for fuel economy. Compared to manual, automatic means 5.28 less miles per gallon on average for cars with the same horsepower. * Give a CI*. The model also indicates that each additional horsepower rated translates into 0.059 less mpg, or 5.9 less miles per gallon per 100 hp.  *GIVE CI* The regression model, with confidence interval, is plotted in the appendix. 
+The strict interpretation of the model is that automatic transmission is worse for fuel economy. Compared to manual, automatic means 5.28 less miles per gallon on average for cars with the same horsepower. The model also indicates that each additional horsepower rated translates into 0.059 less mpg, or 5.9 less miles per gallon per 100 hp. The 95% confidence intervals for mpg change on both transmission and 100 hp are computed below.  The regression model, with confidence interval, is plotted in the appendix. 
 
-###What is the uncertainty in our result?
-Make appropriate inference from the model.
+```{r tranautoCI, results='asis'} 
+co <- summary(hp)$coefficients
+tranauto <- co["tranauto","Estimate"] + c(-1, 0, 1) * qt(.975, df = hp$df) * 
+    co["tranauto","Std. Error"]
+names(tranauto) <- c("95% CI lower", "estimate", "95% CI upper")
+hpCI <- (co["hp","Estimate"] + c(-1, 0, 1) * qt(.975, df = hp$df) * 
+             co["hp","Std. Error"]) *100
+print(xtable(rbind(tranauto,hpCI)), type="latex",comment=F)
+```
 
-#Conclusions
-The analysis shows that cars with automatic transmission have about $5.3 \plusminus ciBound$ mpg less fuel efficiency, controlling for horsepower. The analysis also showed that other design factors such as horsepower and weight are very influential. It appears that automatic transmissions are more often equipped on heavy and powerful cars, that is they are part of a high end set of features. Cars with manual transmission tended to be more likely on cars with smaller engines with a greater overall design focus on economy.
 
-[^1]: This open source analysis was prepared by @vpipkt using [Rmarkdown](http://rmarkdown.rstudio.com). Contribute on [github](https://github.com/vpipkt/datasciencecoursera/Regression/project).
+[^1]: This open source analysis was prepared by @vpipkt using [Rmarkdown](http://rmarkdown.rstudio.com). Contribute on [github](https://github.com/vpipkt/datasciencecoursera/tree/master/Regression/project).
 
 
 \pagebreak
-#Appendix
-up to 3 pages no text
+
+# Appendix
+
+## Exploratory analysis
+```{r explore}
+d <- ggplot(mtcars, aes(x = disp, size = mpg, y = qsec, col=tran))
+d + geom_point() + xlab("Engine displacement, cu. in.") +  ylab("1/4 mile time, sec")
+```
 
 ## Diagnostic plot
-```{r diagPlots,fig.height=3}
+```{r diagPlots,fig.height=6}
 par(mfrow = c(2,2))
 plot(hp)
 ```
 
+## Regression model with confidence intervals
+```{r modelWithCI}
+# model predictions with confidence interval
+pred <- predict(hp, interval="confidence")
+predframe <- with(mtcars,
+                  data.frame(hp, tran, mpg = pred[, "fit"], 
+                             lwr = pred[, "lwr"], upr = pred[, "upr"]))
+# model coefficients in data frame, for geom_abline
+coeffs <- data.frame(tran=factor(c("auto", "manual")), 
+                     a = c(sum(hp$coefficients[1:2]),hp$coefficients[1]), 
+                     b = rep(hp$coefficients[3],2))
 
-## Can u do wone of those swaggy ggplots with the lines for auto and manual in the mpg~hp space? 
+modelPlot <- ggplot(mtcars, aes(x = hp, y = mpg))
+modelPlot + geom_ribbon(data = predframe, aes(ymin = lwr, ymax = upr, group = tran), 
+                        fill = "grey70", alpha = 0.5) +
+    geom_abline(data = coeffs, aes(intercept = a, slope = b, color = tran)) + 
+    geom_point(aes(col = tran), size = 3) +
+    labs(title = "Fitted model mpg ~ tran + hp")
+```
+
