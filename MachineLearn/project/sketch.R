@@ -20,3 +20,5 @@ summary(training$num_window)
 summary(training[,20:40])
 classes(training)
 str(training)
+
+modRF <- train(classe ~ ., data = training, method="rf")
