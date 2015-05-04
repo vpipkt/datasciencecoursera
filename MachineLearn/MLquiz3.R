@@ -20,6 +20,8 @@ print(q1Mod$finalModel)
 library(pgmm)
 
 library(tree)
+data(olive)
+olive <- olive[,-1]
 q3tree <- tree(Area ~ ., data=olive)
 predict(q3tree, newdata = as.data.frame(t(colMeans(olive))))
 

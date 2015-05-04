@@ -49,7 +49,7 @@ testing = mixtures[-inTrain,]
 hist(training$Superplasticizer)
 sum(training$Superplasticizer<=0)
 nrow(training)
-hist(training$Superplasticizer+1)
+hist(log(training$Superplasticizer+1))
 
 
 #Question 4 looks familiar
@@ -65,7 +65,7 @@ testing = adData[-inTrain,]
 ILS <- grep("^IL.",names(training))
 count(ILS)
 
-q4 <- preProcess(training[,ILS],method="pca",thresh=0.8)
+q4 <- preProcess(training[,ILS],method="pca",thresh=0.90)
 q4
 
 
