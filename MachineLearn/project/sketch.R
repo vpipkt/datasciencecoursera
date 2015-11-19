@@ -1,3 +1,5 @@
+setwd('~/source/repos/datasciencecoursera/machinelearn/project')
+
 trainUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
 trainDir <- "data/pml-training.csv"
 testUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
@@ -21,4 +23,29 @@ summary(training[,20:40])
 classes(training)
 str(training)
 
+library(caret)
 modRF <- train(classe ~ ., data = training, method="rf")
+# fails due to missing values, every row has >0 missing value
+
+
+mean(complete.cases(training))
+plot(rowMeans(is.na(training)))
+
+plot(
+    colMeans(is.na(training))
+)
+
+#eliminate any variable with more than 90% missing data
+training <- training[, colMeans(is.na(training)) < 0.9]
+
+
+library(doParallel); 
+#run model in parallel
+cl <- makeCluster(detectCores())
+registerDoParallel(cl)
+
+#try random forest again (note this will have seed control issues http://stackoverflow.com/questions/13403427/fully-reproducible-parallel-models-using-caret )
+tc <- trainControl(method = 'cv', number = 5)
+modRF <- train(classe ~ ., data = training, method="rf", trControl = tc)
+modRF
+#save(modRF, file = 'data/modRF.Rdata')
